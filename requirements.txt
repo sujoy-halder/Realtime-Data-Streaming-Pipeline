@@ -1,0 +1,20 @@
+# Core Airflow (use constraints!)
+apache-airflow==2.7.0
+
+# Airflow Providers (only what you use)
+apache-airflow-providers-postgres
+apache-airflow-providers-apache-kafka
+apache-airflow-providers-http
+
+# Streaming / Kafka
+kafka-python==2.0.2
+
+# Spark
+pyspark==3.4.1
+
+# Cassandra
+cassandra-driver==3.28.0
+
+# Utilities
+requests==2.31.0
+pandas==2.0.3

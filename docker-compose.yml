@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    networks: [confluent]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks: [confluent]
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.4.0
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+    networks: [confluent]
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.4.0
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka:29092
+      CONTROL_CENTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+    networks: [confluent]
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    networks: [confluent]
+
+  airflow-webserver:
+    image: apache/airflow:2.7.0
+    container_name: airflow-webserver
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+    command: webserver
+    networks: [confluent]
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.0
+    container_name: airflow-scheduler
+    depends_on:
+      - airflow-webserver
+    volumes:
+      - ./dags:/opt/airflow/dags
+    command: scheduler
+    networks: [confluent]
+
+  spark-master:
+    image: bitnami/spark:latest
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "7077:7077"
+      - "9090:8080"
+    networks: [confluent]
+
+  spark-worker:
+    image: bitnami/spark:latest
+    depends_on:
+      - spark-master
+      - kafka
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    networks: [confluent]
+
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    networks: [confluent]
+
+networks:
+  confluent:
