@@ -54,8 +54,8 @@ This significantly improves recruiter engagement.
 ---
 
 # 🏗️ Architecture
+<img width="3274" height="1221" alt="Data engineering architecture" src="https://github.com/user-attachments/assets/db4277e9-a65a-498c-bae4-5386a036faf0" />
 
-![Architecture](./assets/architecture.png)
 
 ---
 
@@ -135,7 +135,7 @@ realtime-data-streaming-platform/
 ## 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/your-username/realtime-data-streaming-platform.git
+git clone https://github.com/sujoy-halder/Realtime-Data-Streaming-Pipeline.git
 
 cd realtime-data-streaming-platform
 ```
