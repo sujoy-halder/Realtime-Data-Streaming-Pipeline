@@ -12,111 +12,154 @@
 
 ---
 
-## 🧠 What This Project Does
+# 🧠 Overview
 
-A **real-time, distributed data pipeline** that ingests, streams, processes, and stores data at scale.
+A real-time distributed data engineering pipeline that ingests, streams, processes, and stores user event data using modern big data technologies.
 
 ```text
-API → Airflow → PostgreSQL → Kafka → Spark → Cassandra
+RandomUser API
+        ↓
+Apache Airflow
+        ↓
+Apache Kafka
+        ↓
+Spark Structured Streaming
+        ↓
+Apache Cassandra
 ```
 
-✔ Simulates real-world streaming systems (like Netflix / Uber)
-✔ Handles real-time ingestion + processing
-✔ Built with scalable, fault-tolerant components
+### ✅ Key Features
+
+- Real-time event streaming pipeline
+- Distributed stream processing
+- Fault-tolerant architecture
+- Dockerized infrastructure
+- Scalable storage layer
+- End-to-end orchestration
 
 ---
 
-## 🎬 Demo (Add GIF here)
+# 🎬 Demo
 
-> 🔴 *Tip: Record your screen (Kafka + Spark + logs running) and upload a GIF here*
-> This is what makes recruiters pause.
+> 📌 Add a GIF or short demo video here showing:
+>
+> - Airflow DAG running
+> - Kafka topic streaming
+> - Spark processing
+> - Cassandra data insertion
+> - Docker containers
+
+This significantly improves recruiter engagement.
 
 ---
 
-## 🏗️ Architecture
+# 🏗️ Architecture
 
 ![Architecture](./assets/architecture.png)
 
 ---
 
-## ⚙️ Tech Stack
+# ⚙️ Tech Stack
 
-| Layer          | Tool                            |
-| -------------- | ------------------------------- |
-| Ingestion      | randomuser API                  |
-| Orchestration  | Apache Airflow                  |
-| Streaming      | Apache Kafka + Zookeeper        |
-| Processing     | Apache Spark                    |
-| Storage        | PostgreSQL, Cassandra           |
-| Monitoring     | Control Center, Schema Registry |
-| Infrastructure | Docker                          |
-
----
-
-## 🔄 How It Works
-
-1. **Data Generation**
-
-   * API generates synthetic user data
-
-2. **Orchestration (Airflow)**
-
-   * Schedules and loads data into PostgreSQL
-
-3. **Streaming (Kafka)**
-
-   * Streams events in real time
-
-4. **Processing (Spark)**
-
-   * Cleans + transforms streaming data
-
-5. **Storage (Cassandra)**
-
-   * Stores processed data for fast access
+| Layer | Technology |
+|---|---|
+| Data Source | RandomUser API |
+| Orchestration | Apache Airflow |
+| Streaming | Apache Kafka + Zookeeper |
+| Stream Processing | Spark Structured Streaming |
+| Storage | Apache Cassandra |
+| Metadata DB | PostgreSQL |
+| Monitoring | Control Center + Schema Registry |
+| Infrastructure | Docker + Docker Compose |
 
 ---
 
-## 📁 Project Structure
+# 🔄 Pipeline Workflow
+
+## 1️⃣ Data Ingestion
+
+- Airflow DAG fetches synthetic user data from RandomUser API
+- Data is formatted into structured JSON events
+
+## 2️⃣ Kafka Streaming
+
+- Events are published to Kafka topic:
+  
+```text
+users_created
+```
+
+- Kafka acts as a distributed event broker
+
+## 3️⃣ Stream Processing
+
+- Spark Structured Streaming consumes Kafka events
+- JSON events are parsed and transformed
+- Streaming DataFrame is generated in real time
+
+## 4️⃣ Data Storage
+
+- Processed streaming records are written into Cassandra
+- Cassandra provides scalable distributed storage
+
+---
+
+# 📁 Project Structure
 
 ```bash
-realtime-data-platform/
+realtime-data-streaming-platform/
 │
 ├── docker-compose.yml
-├── .env
+├── requirements.txt
+├── .gitignore
+├── README.md
 │
-├── api/                # Kafka Producer
-├── airflow/            # DAGs
-├── spark/              # Streaming jobs
-├── cassandra/          # DB schema
-├── kafka/              # Configs
-├── scripts/            # Start/stop scripts
-├── assets/             # Diagrams / GIFs
-└── tests/              # Pipeline tests
+├── airflow/
+│   ├── dags/
+│   │   └── airflow_kafka_producer.py
+│   └── entrypoint.sh
+│
+├── spark/
+│   └── spark_streaming_consumer.py
+│
+├── assets/
+│   └── architecture.png
+│
+└── tests/
 ```
 
 ---
 
-## 🚀 Quick Start (1 Command Run)
+# 🚀 Quick Start
+
+## 1️⃣ Clone Repository
 
 ```bash
-make up
+git clone https://github.com/your-username/realtime-data-streaming-platform.git
+
+cd realtime-data-streaming-platform
 ```
 
-Or manually:
+## 2️⃣ Start Containers
 
 ```bash
 docker-compose up -d
 ```
 
+## 3️⃣ Verify Running Containers
+
+```bash
+docker ps
+```
+
 ---
 
-## 📡 Create Kafka Topic
+# 📡 Create Kafka Topic
 
 ```bash
 docker exec -it kafka kafka-topics \
 --create \
---topic user-events \
+--topic users_created \
 --bootstrap-server localhost:9092 \
 --partitions 3 \
 --replication-factor 1
@@ -124,25 +167,26 @@ docker exec -it kafka kafka-topics \
 
 ---
 
-## ▶️ Run Producer
+# ▶️ Run Spark Streaming Consumer
 
 ```bash
-python api/producer.py
+python spark/spark_streaming_consumer.py
 ```
 
 ---
 
-## 📊 Observability (Very Important)
+# 📊 Observability
 
-| Tool       | URL                   |
-| ---------- | --------------------- |
-| Kafka UI   | http://localhost:9021 |
-| Spark UI   | http://localhost:8080 |
+| Service | URL |
+|---|---|
 | Airflow UI | http://localhost:8080 |
+| Spark Master UI | http://localhost:9090 |
+| Kafka Control Center | http://localhost:9021 |
+| Schema Registry | http://localhost:8081 |
 
 ---
 
-## 🧪 Testing
+# 🧪 Testing
 
 ```bash
 pytest tests/
@@ -150,39 +194,59 @@ pytest tests/
 
 ---
 
-## 💡 Key Engineering Highlights
+# 💡 Engineering Highlights
 
-✔ Real-time streaming pipeline
-✔ Distributed system design
-✔ Fault-tolerant architecture
-✔ Microservices-based setup
-✔ Containerized infrastructure
-
----
-
-## 🏆 Resume Value
-
-* Built an **end-to-end real-time data pipeline** using Kafka, Spark, and Airflow
-* Designed a **scalable distributed system handling streaming data**
-* Implemented **event-driven architecture with containerized deployment**
+- Real-time streaming architecture
+- Distributed systems design
+- Event-driven data pipeline
+- Structured stream processing
+- Containerized deployment
+- Scalable NoSQL storage
+- Fault-tolerant pipeline architecture
 
 ---
 
-## 📌 Future Improvements
+# 🏆 Resume Value
 
-* Add **Prometheus + Grafana monitoring**
-* Deploy on **AWS / GCP**
-* Add **CI/CD pipeline (GitHub Actions)**
-* Implement **schema evolution (Avro)**
+### Built a production-style real-time data platform using:
+
+- Apache Kafka
+- Spark Structured Streaming
+- Apache Airflow
+- Cassandra
+- Docker
+
+### Key Achievements
+
+- Designed distributed event-driven architecture
+- Implemented scalable streaming ingestion pipeline
+- Built fault-tolerant processing system
+- Automated orchestration using Airflow
+- Containerized full infrastructure using Docker Compose
 
 ---
 
-## 👨‍💻 Author
+# 📌 Future Improvements
 
-**Sujoy Halder**
+- Add Prometheus + Grafana monitoring
+- Implement Avro serialization
+- Add Schema Evolution support
+- Deploy on AWS / GCP
+- Add CI/CD pipeline using GitHub Actions
+- Integrate dbt for analytics transformation
 
 ---
 
-## ⭐ If you found this useful
+# 👨‍💻 Author
 
-Give it a ⭐ and share — it helps a lot!
+## Sujoy Halder
+
+- Data Engineering
+- Big Data & Streaming Systems
+- Kafka + Spark + Airflow
+
+---
+
+# ⭐ Support
+
+If you found this project useful, give it a ⭐ on GitHub.

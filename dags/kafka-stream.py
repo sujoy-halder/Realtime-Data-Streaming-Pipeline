@@ -3,7 +3,7 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 
 default_args = {
-    'owner': 'panda',
+    'owner': 'sujoy',
     'retries': 2,
     'retry_delay': timedelta(seconds=30)
 }
@@ -12,8 +12,15 @@ default_args = {
 
 def get_data():
     import requests
-    res = requests.get('https://randomuser.me/api/')
-    return res.json()['results'][0]
+
+    response = requests.get(
+        'https://randomuser.me/api/',
+        timeout=10
+    )
+
+    response.raise_for_status()
+
+    return response.json()['results'][0]
 
 # ------------------ Format ------------------
 
@@ -27,8 +34,13 @@ def format_data(res):
         "first_name": res['name']['first'],
         "last_name": res['name']['last'],
         "gender": res['gender'],
-        "address": f"{location['street']['number']} {location['street']['name']}, "
-                   f"{location['city']}, {location['state']}, {location['country']}",
+        "address": (
+            f"{location['street']['number']} "
+            f"{location['street']['name']}, "
+            f"{location['city']}, "
+            f"{location['state']}, "
+            f"{location['country']}"
+        ),
         "post_code": str(location['postcode']),
         "email": res['email'],
         "username": res['login']['username'],
@@ -41,32 +53,46 @@ def format_data(res):
 
 def stream_data():
     import json
-    from kafka import KafkaProducer
     import logging
+    from kafka import KafkaProducer
 
     producer = KafkaProducer(
-        bootstrap_servers=['kafka:29092'],  # FIXED
-        value_serializer=lambda v: json.dumps(v).encode('utf-8')
+        bootstrap_servers=['kafka:29092'],
+        value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+        acks='all'
     )
 
     try:
         res = get_data()
         data = format_data(res)
 
-        producer.send('users_created', data)
+        producer.send('users_created', value=data)
+
+        # Ensure data is actually sent
+        producer.flush()
+
         logging.info(f"Sent data: {data['id']}")
 
     except Exception as e:
         logging.error(f"Error sending data: {e}")
         raise
 
+    finally:
+        producer.close()
+
 # ------------------ DAG ------------------
 
 with DAG(
     dag_id='user_automation',
-    start_date=datetime(2023, 10, 30),
-    schedule_interval='*/1 * * * *',  # every minute
-    catchup=False
+    start_date=datetime(2024, 1, 1),
+
+    # New Airflow syntax
+    schedule='*/1 * * * *',
+
+    catchup=False,
+    default_args=default_args,
+
+    tags=['kafka', 'streaming', 'airflow']
 ) as dag:
 
     streaming_task = PythonOperator(
